@@ -19,6 +19,9 @@ namespace TestTinyECS
             ITinyComponent b = new CutomComponent_B();
             ITinyComponent c = new CutomComponent_C();
 
+            // entity.AddComponent<CustomComponent>();
+            // entity.GetComponent<Customcomponent>();
+
             // act
             manager.AddSystem(system);
             manager.AddEntity(entity);

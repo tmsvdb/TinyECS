@@ -10,14 +10,11 @@ namespace TinyECS
 
     public class ECSManager
     {
-        public List<TinySystem> systems;
+        public List<TinySystem> systems = new List<TinySystem>();
         public List<TinyEntity> entities;
 
         public void AddSystem (TinySystem system)
         {
-            if (systems == null)
-                systems = new List<TinySystem>();
-
             systems.Add(system);
         }
 
@@ -59,6 +56,8 @@ namespace TinyECS
 
     public class TinySystem
     {
+        // TODO: render entity through system using dependent Componets
+
         public List<ITinyComponent> componentDependencies = new List<ITinyComponent>();
         private List<TinyEntity> entityReferences = new List<TinyEntity>();
 
@@ -87,16 +86,20 @@ namespace TinyECS
     }
 
     public class TinyEntity : List<ITinyComponent>
-    { 
+    {
+        // TODO: keeps track of Componets and systems
+
         public event StageForSystemApplication Stage;
 
-        public ITinyComponent AddComponent (ITinyComponent component)
+        public T AddComponent<T> () where T : ITinyComponent
         {
             Console.Write("TinyEntity: AddComponent");
 
-            Add(component);
+            T new_component_of_type = Activator.CreateInstance<T>();
+
+            Add(new_component_of_type);
             Stage(this);
-            return component;
+            return new_component_of_type;
         }
 
         public bool HasComponents (List<ITinyComponent> components)
@@ -108,5 +111,7 @@ namespace TinyECS
     public interface ITinyComponent
     {
         string type_id { get; }
+
+        // TODO: keeps track of Enity types and values
     }
 }
