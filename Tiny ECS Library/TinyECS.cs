@@ -11,7 +11,7 @@ namespace TinyECS
     public class ECSManager
     {
         public List<TinySystem> systems = new List<TinySystem>();
-        public List<TinyEntity> entities;
+        public List<TinyEntity> entities = new List<TinyEntity>();
 
         public void AddSystem (TinySystem system)
         {
@@ -20,13 +20,11 @@ namespace TinyECS
 
         public void AddEntity (TinyEntity entity)
         {
-            if (entities == null)
-                entities = new List<TinyEntity>();
-
             entity.Stage += new StageForSystemApplication(ApplyForSystems);
             entities.Add(entity);
         }
 
+        /*
         public void UdateSystems ()
         {
             foreach (TinySystem system in systems)
@@ -34,6 +32,7 @@ namespace TinyECS
                 system.Update();
             }
         }
+        */
 
         private void ApplyForSystems (TinyEntity entity)
         {
@@ -87,23 +86,30 @@ namespace TinyECS
 
     public class TinyEntity : List<ITinyComponent>
     {
-        // TODO: keeps track of Componets and systems
+        // TODO: keeps track of Components and systems_dependancies
 
         public event StageForSystemApplication Stage;
 
-        public T AddComponent<T> () where T : ITinyComponent
+        public T AddComponent<T> (T component) where T : ITinyComponent
         {
-            Console.Write("TinyEntity: AddComponent");
-
-            T new_component_of_type = Activator.CreateInstance<T>();
-
-            Add(new_component_of_type);
+            Add(Activator.CreateInstance<T>());
             Stage(this);
-            return new_component_of_type;
+            return component;
         }
 
         public bool HasComponents (List<ITinyComponent> components)
         {
+            foreach (ITinyComponent requested_comp in components)
+            {
+                bool has_comp = false;
+                foreach (ITinyComponent local_comp in this)
+                    if (local_comp.GetType().Equals(requested_comp.GetType()))
+                    {
+                        has_comp = true;
+                        break;
+                    }
+                if (!has_comp) return false;
+            }
             return true;
         }
     }

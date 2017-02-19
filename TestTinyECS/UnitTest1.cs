@@ -30,7 +30,7 @@ namespace TestTinyECS
             entity.AddComponent(b);
             entity.AddComponent(c);
 
-            manager.UdateSystems();
+            //manager.UdateSystems();
 
             // assert
             Assert.IsNotNull(system.entityStagedForSystemUpdate);
