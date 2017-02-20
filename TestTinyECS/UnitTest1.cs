@@ -9,53 +9,111 @@ namespace TestTinyECS
     public class TestECS
     {
         [TestMethod]
-        public void BasicUpdateTest()
+        public void BasicSystemUpdateTest()
         {
             // arrange
             ECSManager manager = new ECSManager();
-            CustomSystem system = new CustomSystem();
+            CustomSystem_A system = new CustomSystem_A();
 
             // act
             manager.AddSystem(system);
-            Console.WriteLine("BasicUpdateTest system added");
 
             ITinyEntity entity = manager.CreateEntity();
-            Console.WriteLine("BasicUpdateTest New entity created");
 
-            entity.AddComponent<CutomComponent_A>();
-            Console.WriteLine("BasicUpdateTest Component A added");
-
-            entity.AddComponent<CutomComponent_B>();
-            Console.WriteLine("BasicUpdateTest Component B added");
-
-            entity.AddComponent<CutomComponent_C>();
-            Console.WriteLine("BasicUpdateTest Component C added");
+            entity.AddComponent<CustomComponent_A>();
+            entity.AddComponent<CustomComponent_B>();
+            entity.AddComponent<CustomComponent_C>();
 
             // assert
             Assert.IsNotNull(system.entityStagedForSystemUpdate);
         }
+
+        [TestMethod]
+        public void DoesNotHaveCorrespondingComponents()
+        {
+            // arrange
+            ECSManager manager = new ECSManager();
+            CustomSystem_A system_01 = new CustomSystem_A();
+            CustomSystem_B system_02 = new CustomSystem_B();
+
+            // act
+            manager.AddSystem(system_01);
+            manager.AddSystem(system_02);
+
+            ITinyEntity false_entity = manager.CreateEntity();
+            false_entity.AddComponent<CustomComponent_A>();
+            false_entity.AddComponent<CustomComponent_C>();
+
+            Assert.AreNotEqual(false_entity, system_01.entityStagedForSystemUpdate);
+            Assert.AreNotEqual(false_entity, system_02.entityStagedForSystemUpdate);
+        }
+
+        [TestMethod]
+        public void HasCorrespondingComponents()
+        {
+            // arrange
+            ECSManager manager = new ECSManager();
+            CustomSystem_A system_01 = new CustomSystem_A();
+            CustomSystem_B system_02 = new CustomSystem_B();
+
+            // act
+            manager.AddSystem(system_01);
+            manager.AddSystem(system_02);
+
+            ITinyEntity entity_01 = manager.CreateEntity();
+
+            entity_01.AddComponent<CustomComponent_A>();
+            entity_01.AddComponent<CustomComponent_B>();
+
+            Assert.AreEqual(entity_01, system_01.entityStagedForSystemUpdate);
+            Assert.AreNotEqual(entity_01, system_02.entityStagedForSystemUpdate);
+
+            ITinyEntity entity_02 = manager.CreateEntity();
+
+            entity_02.AddComponent<CustomComponent_B>();
+            entity_02.AddComponent<CustomComponent_C>();
+
+            // assert
+            Assert.AreEqual(entity_02, system_02.entityStagedForSystemUpdate);
+            Assert.AreNotEqual(entity_02, system_01.entityStagedForSystemUpdate);
+        }
     }
 
-    public class CutomComponent_A
+    public class CustomComponent_A
     {
         public int value_A = 25;
     }
 
-    public class CutomComponent_B
+    public class CustomComponent_B
     {
         public string value_B = "hello world";
     }
 
-    public class CutomComponent_C
+    public class CustomComponent_C
     {
         public bool value_C = true;
     }
 
-    public class CustomSystem : ITinySystem
+    public class CustomSystem_A : ITinySystem
     {
         public List<Type> ComponentDependencies()
         {
-            return new List<Type> () { typeof(CutomComponent_A) };
+            return new List<Type> () { typeof(CustomComponent_A), typeof(CustomComponent_B) };
+        }
+
+        public void UpdateEntity(ITinyEntity entity)
+        {
+            entityStagedForSystemUpdate = entity;
+        }
+
+        public ITinyEntity entityStagedForSystemUpdate;
+    }
+
+    public class CustomSystem_B : ITinySystem
+    {
+        public List<Type> ComponentDependencies()
+        {
+            return new List<Type>() { typeof(CustomComponent_B), typeof(CustomComponent_C) };
         }
 
         public void UpdateEntity(ITinyEntity entity)
