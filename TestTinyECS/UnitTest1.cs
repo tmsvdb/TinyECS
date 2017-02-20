@@ -17,11 +17,19 @@ namespace TestTinyECS
 
             // act
             manager.AddSystem(system);
+            Console.WriteLine("BasicUpdateTest system added");
+
             ITinyEntity entity = manager.CreateEntity();
+            Console.WriteLine("BasicUpdateTest New entity created");
 
             entity.AddComponent<CutomComponent_A>();
+            Console.WriteLine("BasicUpdateTest Component A added");
+
             entity.AddComponent<CutomComponent_B>();
+            Console.WriteLine("BasicUpdateTest Component B added");
+
             entity.AddComponent<CutomComponent_C>();
+            Console.WriteLine("BasicUpdateTest Component C added");
 
             // assert
             Assert.IsNotNull(system.entityStagedForSystemUpdate);

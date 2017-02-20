@@ -60,21 +60,11 @@ namespace TinyECS
         private class TinyEntity : ITinyEntity
         {
 
-
-
-            private interface ITinyComponent
-            {
-                Type GetComponentType();
-                List<ITinySystem> GetDependentSystems();
-                object GetComponentValueObject();
-                void Destroy();
-            }
-
-            private class TinyComponent<T> : ITinyComponent
+            private class TinyComponent
             {
                 public Type componentType;
                 public List<ITinySystem> dependentSystems;
-                public T componentValueObject;
+                public object componentValueObject;
 
                 public Type GetComponentType()
                 {
@@ -83,51 +73,65 @@ namespace TinyECS
 
                 public List<ITinySystem> GetDependentSystems()
                 {
+                    if (dependentSystems == null) dependentSystems = new List<ITinySystem>();
                     return dependentSystems;
                 }
 
                 public object GetComponentValueObject()
                 {
-                    return (T) componentValueObject;
+                    return componentValueObject;
                 }
 
                 public void Destroy ()
                 {
                     componentType = null;
                     dependentSystems = null;
-                    componentValueObject = default(T);
+                    componentValueObject = null;
                 }
             }
 
 
 
 
-            private List<ITinyComponent> components;
+            private List<TinyComponent> components = new List<TinyComponent>();
 
             public event Action<TinyEntity> stageForApplication;
             public event Action<TinyEntity> stageForDestruction;
 
             public T AddComponent<T>()
             {
-                TinyComponent<T> new_component = new TinyComponent<T>();
+                TinyComponent new_component = new TinyComponent();
                 new_component.componentType = typeof(T);
                 new_component.componentValueObject = Activator.CreateInstance<T>();
                 components.Add(new_component);
                 stageForApplication(this);
-                return new_component.componentValueObject;
+                return (T) new_component.componentValueObject;
             }
 
             public T GetComponent<T>()
             {
-                foreach (T component in components)
-                    if (component is T) return component;
-                return default(T); // return null depending on the type -> int returns 0
+                TinyComponent component = GetTinyComponentByType<T>();
+                if (component != null) return (T) component.componentValueObject;
+                else return default(T); // return null depending on the type -> int returns 0
+            }
+
+            private TinyComponent GetTinyComponentByType<T>()
+            {
+                foreach (TinyComponent component in components)
+                    if (component.componentType.Equals(typeof(T)))
+                        return component;
+
+                return null;
             }
 
             public void CheckAndAddSystemReferences (ITinySystem system)
             {
-                foreach (ITinyComponent component in  components)
+                foreach (TinyComponent component in  components)
                 {
+                    Console.WriteLine("CheckAndAddSystemReferences Component Type => " + component.GetComponentType().ToString());
+
+                    foreach(Type dependency in system.ComponentDependencies())
+                        Console.WriteLine("CheckAndAddSystemReferences Sysem dependency Type => " + dependency.ToString());
 
                     if (system.ComponentDependencies().Contains(component.GetComponentType()))
                     {
@@ -141,14 +145,14 @@ namespace TinyECS
 
             public void RemoveComponent<T>()
             {
-                ITinyComponent component = (ITinyComponent) GetComponent<T>();
+                TinyComponent component = GetTinyComponentByType<T>();
                 component.Destroy();
                 components.Remove(component);
             }
 
             public void Destroy()
             {
-                foreach (ITinyComponent component in components)
+                foreach (TinyComponent component in components)
                     component.Destroy();
                 components = null;
 
