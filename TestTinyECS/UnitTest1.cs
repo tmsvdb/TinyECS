@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TinyECS;
 
@@ -12,67 +13,48 @@ namespace TestTinyECS
         {
             // arrange
             ECSManager manager = new ECSManager();
-            TinyEntity entity = new TinyEntity();
-            CustomSystem system = new CustomSystem();      
-
-            ITinyComponent a = new CutomComponent_A();
-            ITinyComponent b = new CutomComponent_B();
-            ITinyComponent c = new CutomComponent_C();
-
-            // entity.AddComponent<CustomComponent>();
-            // entity.GetComponent<Customcomponent>();
+            CustomSystem system = new CustomSystem();
 
             // act
             manager.AddSystem(system);
-            manager.AddEntity(entity);
+            ITinyEntity entity = manager.CreateEntity();
 
-            entity.AddComponent(a);
-            entity.AddComponent(b);
-            entity.AddComponent(c);
-
-            //manager.UdateSystems();
+            entity.AddComponent<CutomComponent_A>();
+            entity.AddComponent<CutomComponent_B>();
+            entity.AddComponent<CutomComponent_C>();
 
             // assert
             Assert.IsNotNull(system.entityStagedForSystemUpdate);
         }
     }
 
-    public class CutomComponent_A : ITinyComponent
+    public class CutomComponent_A
     {
-        public string type_id { get { return "Component A"; }  }
         public int value_A = 25;
     }
 
-    public class CutomComponent_B : ITinyComponent
+    public class CutomComponent_B
     {
-        public string type_id { get { return "Component B"; } }
         public string value_B = "hello world";
     }
 
-    public class CutomComponent_C : ITinyComponent
+    public class CutomComponent_C
     {
-        public string type_id { get { return "Component C"; } }
         public bool value_C = true;
     }
 
-    public class CustomSystem : TinySystem
+    public class CustomSystem : ITinySystem
     {
-        public TinyEntity entityStagedForSystemUpdate = null;
-
-        public CustomSystem ()
+        public List<Type> ComponentDependencies()
         {
-            ITinyComponent a = new CutomComponent_A();
-            ITinyComponent b = new CutomComponent_B();
-            ITinyComponent c = new CutomComponent_C();
-
-            this.componentDependencies.Add(b);
-            this.componentDependencies.Add(c);
+            return new List<Type> () { typeof(CutomComponent_A) };
         }
 
-        public override void UpdateEntity(TinyEntity entity)
+        public void UpdateEntity(ITinyEntity entity)
         {
-            Console.Write("CustomSystem: UpdateEntity");
             entityStagedForSystemUpdate = entity;
         }
+
+        public ITinyEntity entityStagedForSystemUpdate;
     }
 }
