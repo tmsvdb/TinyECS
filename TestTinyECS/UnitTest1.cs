@@ -29,27 +29,7 @@ namespace TestTinyECS
         }
 
         [TestMethod]
-        public void DoesNotHaveCorrespondingComponents()
-        {
-            // arrange
-            ECSManager manager = new ECSManager();
-            CustomSystem_A system_01 = new CustomSystem_A();
-            CustomSystem_B system_02 = new CustomSystem_B();
-
-            // act
-            manager.AddSystem(system_01);
-            manager.AddSystem(system_02);
-
-            ITinyEntity false_entity = manager.CreateEntity();
-            false_entity.AddComponent<CustomComponent_A>();
-            false_entity.AddComponent<CustomComponent_C>();
-
-            Assert.AreNotEqual(false_entity, system_01.entityStagedForSystemUpdate);
-            Assert.AreNotEqual(false_entity, system_02.entityStagedForSystemUpdate);
-        }
-
-        [TestMethod]
-        public void HasCorrespondingComponents()
+        public void SystemUpdateOnAddDependentComponent()
         {
             // arrange
             ECSManager manager = new ECSManager();
@@ -66,7 +46,6 @@ namespace TestTinyECS
             entity_01.AddComponent<CustomComponent_B>();
 
             Assert.AreEqual(entity_01, system_01.entityStagedForSystemUpdate);
-            Assert.AreNotEqual(entity_01, system_02.entityStagedForSystemUpdate);
 
             ITinyEntity entity_02 = manager.CreateEntity();
 
@@ -75,7 +54,28 @@ namespace TestTinyECS
 
             // assert
             Assert.AreEqual(entity_02, system_02.entityStagedForSystemUpdate);
-            Assert.AreNotEqual(entity_02, system_01.entityStagedForSystemUpdate);
+        }
+
+        [TestMethod]
+        public void SystemUpdateOnChangeComponent()
+        {
+            // arrange
+            ECSManager manager = new ECSManager();
+            CustomSystem_A system_01 = new CustomSystem_A();
+
+            // act
+            manager.AddSystem(system_01);
+
+            ITinyEntity entity_01 = manager.CreateEntity();
+
+            entity_01.AddComponent<CustomComponent_A>();
+            entity_01.AddComponent<CustomComponent_B>();
+
+            CustomComponent_A component_A = entity_01.GetComponent<CustomComponent_A>();
+            component_A.value_A = 12;
+
+            // assert
+            Assert.Equals(system_01.entityStagedForSystemUpdate.GetComponent<CustomComponent_A>().value_A, 12);
         }
     }
 
