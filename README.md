@@ -53,9 +53,8 @@ EXAMPLE CODE:
     public class CustomSystem : ITinySystem
     {
         /*
+            <This is a manditory interface methode>
             Set the components this system depends on.
-
-            This is a manditory interface methode.
             
             @returns a List<Type> of all the dependency Types the ECS should listen to
         */
@@ -66,14 +65,13 @@ EXAMPLE CODE:
         }
 
         /* 
+            <This is a manditory interface methode>
             Entities that comtain components which value has been changed 
             are handled by the systems UpdateEntity methode.
             This methode is only called if the enity who's value has changed has a component
             that this system depends on.
 
-            This is a manditory interface methode.
-
-            @param entity: the entity in question who's component has been updated.
+            @param ITinyEntity entity: the entity in question who's component has been updated.
         */
         public void UpdateEntity(ITinyEntity entity)
         {
