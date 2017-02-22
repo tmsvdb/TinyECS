@@ -86,6 +86,12 @@ EXAMPLE CODE:
 State of this project
 --
 
+TODOs:
+- Make sure enitis are passed through systems in ther order the systems are added
+- Implement a ForceUpdate() so that entities can itterate through systems in the ored the where added. This if the user want to use the ECS tool in an update game loop.
+- Try using a getter/setter to auto update when changed.
+- Move Update() to ECSManager
+
 Completed:
 - Custom systems can be added to the TinyECS.manager
 - Entities are created by the TinyECS.manager this to protect system code from users.
