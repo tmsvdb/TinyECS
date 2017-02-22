@@ -26,6 +26,7 @@ namespace TinyECS
         private List<ITinySystem> systems = new List<ITinySystem>();
         private List<TinyEntity> entities = new List<TinyEntity>();
 
+        //TODO: Make sure enitis are passed through systems in ther order the systems are added
         public void AddSystem (ITinySystem system)
         {
             systems.Add(system);
@@ -109,7 +110,6 @@ namespace TinyECS
                 foreach (TinyComponent component in components)
                     if (component.componentType.Equals(typeof(T)))
                         return component;
-
                 return null;
             }
 
