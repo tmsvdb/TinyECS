@@ -16,6 +16,7 @@ namespace TinyECS
     {
         T AddComponent<T>();
         T GetComponent<T>();
+        void Update();
         void RemoveComponent<T>();
         void Destroy();
     }
@@ -29,6 +30,10 @@ namespace TinyECS
         {
             systems.Add(system);
         }
+
+        // TODO: Implement a ForceUpdate() so that entities can itterate through
+        // systems in the ored the where added. This if the user want to use the
+        // ECS tool in an update game loop 
 
         public ITinyEntity CreateEntity ()
         {
@@ -54,49 +59,33 @@ namespace TinyECS
             }
         }
 
-
-
-
         private class TinyEntity : ITinyEntity
         {
-
             private class TinyComponent
             {
-                public Type componentType;
-                public List<ITinySystem> dependentSystems;
+                public Type componentType;       
+                // TODO: Try using a getter/setter to auto update when changed       
                 public object componentValueObject;
-
-                public Type GetComponentType()
-                {
-                    return componentType;
-                }
-
-                public List<ITinySystem> GetDependentSystems()
-                {
-                    if (dependentSystems == null) dependentSystems = new List<ITinySystem>();
-                    return dependentSystems;
-                }
-
-                public object GetComponentValueObject()
-                {
-                    return componentValueObject;
-                }
-
-                public void Destroy ()
-                {
-                    componentType = null;
-                    dependentSystems = null;
-                    componentValueObject = null;
-                }
+                public List<ITinySystem> dependentSystems = new List<ITinySystem>();
             }
-
-
-
-
+  
             private List<TinyComponent> components = new List<TinyComponent>();
-
             public event Action<TinyEntity> stageForApplication;
             public event Action<TinyEntity> stageForDestruction;
+
+            // TODO: Move Update() to ECSManager
+            public void Update()
+            {
+                List<ITinySystem> allSystemsToUpdate = new List<ITinySystem>();
+
+                foreach (TinyComponent component in components)
+                    foreach (ITinySystem system in component.dependentSystems)
+                        if (!allSystemsToUpdate.Contains(system))
+                            allSystemsToUpdate.Add(system);
+
+                foreach (ITinySystem system in allSystemsToUpdate)
+                    system.UpdateEntity(this);
+            }
 
             public T AddComponent<T>()
             {
@@ -126,34 +115,40 @@ namespace TinyECS
 
             public void CheckAndAddSystemReferences (ITinySystem system)
             {
-                foreach (TinyComponent component in  components)
+                bool aChangeWasMade = false;
+                List<Type> componentTypes = new List<Type>();
+
+                foreach (TinyComponent component in components)
                 {
-                    Console.WriteLine("CheckAndAddSystemReferences Component Type => " + component.GetComponentType().ToString());
+                    componentTypes.Add(component.componentType);
 
-                    foreach(Type dependency in system.ComponentDependencies())
-                        Console.WriteLine("CheckAndAddSystemReferences Sysem dependency Type => " + dependency.ToString());
-
-                    if (system.ComponentDependencies().Contains(component.GetComponentType()))
+                    if (system.ComponentDependencies().Contains(component.componentType))
                     {
-                        component.GetDependentSystems().Add(system);
-                        system.UpdateEntity(this);
+                        component.dependentSystems.Add(system);
+                        aChangeWasMade = true;
                     }
-                    else
-                        component.GetDependentSystems().Remove(system);
+                }
+
+                if (aChangeWasMade) {
+                    bool hasAllDependencies = system.ComponentDependencies().Intersect(componentTypes).Count() == system.ComponentDependencies().Count();
+                    if (hasAllDependencies) system.UpdateEntity(this);
                 }
             }
 
             public void RemoveComponent<T>()
             {
                 TinyComponent component = GetTinyComponentByType<T>();
-                component.Destroy();
                 components.Remove(component);
             }
 
             public void Destroy()
             {
                 foreach (TinyComponent component in components)
-                    component.Destroy();
+                {
+                    component.componentType = null;
+                    component.componentValueObject = null;
+                    component.dependentSystems = null;
+                }
                 components = null;
 
                 stageForDestruction(this);

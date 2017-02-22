@@ -29,7 +29,7 @@ namespace TestTinyECS
         }
 
         [TestMethod]
-        public void SystemUpdateOnAddDependentComponent()
+        public void SystemUpdateOnAddAllDependentComponents()
         {
             // arrange
             ECSManager manager = new ECSManager();
@@ -57,7 +57,27 @@ namespace TestTinyECS
         }
 
         [TestMethod]
-        public void SystemUpdateOnChangeComponent()
+        public void InitComponentValues()
+        {
+            // arrange
+            ECSManager manager = new ECSManager();
+            CustomSystem_A system_01 = new CustomSystem_A();
+
+            // act
+            manager.AddSystem(system_01);
+
+            ITinyEntity entity_01 = manager.CreateEntity();
+
+            CustomComponent_A component_A = entity_01.AddComponent<CustomComponent_A>();
+            CustomComponent_B component_B = entity_01.AddComponent<CustomComponent_B>();
+
+            // assert
+            Assert.AreEqual(25, component_A.value_A);
+            Assert.AreEqual("hello world", component_B.value_B);
+        }
+
+        [TestMethod]
+        public void SystemUpdateOnChangeComponentValues()
         {
             // arrange
             ECSManager manager = new ECSManager();
@@ -73,9 +93,12 @@ namespace TestTinyECS
 
             CustomComponent_A component_A = entity_01.GetComponent<CustomComponent_A>();
             component_A.value_A = 12;
+            entity_01.Update();
 
             // assert
-            Assert.Equals(system_01.entityStagedForSystemUpdate.GetComponent<CustomComponent_A>().value_A, 12);
+            Assert.AreEqual(system_01.entityStagedForSystemUpdate.GetComponent<CustomComponent_A>().value_A, 12);
+            Assert.AreEqual(12, system_01.lastValueA);
+            Assert.AreEqual("hello world", system_01.lastValueB);
         }
     }
 
@@ -104,9 +127,14 @@ namespace TestTinyECS
         public void UpdateEntity(ITinyEntity entity)
         {
             entityStagedForSystemUpdate = entity;
+            lastValueA = entity.GetComponent<CustomComponent_A>().value_A;
+            lastValueB = entity.GetComponent<CustomComponent_B>().value_B;
         }
 
         public ITinyEntity entityStagedForSystemUpdate;
+        public int lastValueA = 0;
+        public string lastValueB = "";
+
     }
 
     public class CustomSystem_B : ITinySystem
