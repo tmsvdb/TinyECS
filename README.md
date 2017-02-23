@@ -85,12 +85,26 @@ EXAMPLE CODE:
 
 State of this project
 --
-
-TODOs:
-- Make sure enitis are passed through systems in ther order the systems are added
-- Implement a ForceUpdate() so that entities can itterate through systems in the ored the where added. This if the user want to use the ECS tool in an update game loop.
-- Try using a getter/setter to auto update when changed.
-- Move Update() to ECSManager
+Up to version v0.2: the code base of the v0.1 is becoming too nested, which will eventualy make the Parsing of al large amount of Enities slow.
+The auto update of components as is does not work, and makes the nested Component <> System implementation unnecessary.
+Whats in the new version:
+- Simple loop through systems in order in which they have been added.
+- Entity keeps track of system dependencies.
+- Entity is going to get an Update methode so it will be parsed through the system loop.
+Interfaces:
++ ECSManager:
+   - ITinySystem AddSystem(ITinySystem);
+   - ITinyEntity CreateEntity();
+   - void ForceUpdate();
++ ITinySystem:
+   - List<Type> ComponentDependencies;
+   - void UpdateEntity (ITinyEntity);
++ ITinyEntity:
+   - T AddComponent<T> ();
+   - T GetComponent<T> ();
+   - void RemoveComponent<T> ();
+   - void Destroy();
+   - void Update();
 
 Completed:
 - Custom systems can be added to the TinyECS.manager
