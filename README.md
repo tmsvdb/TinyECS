@@ -1,13 +1,12 @@
 # TinyECS
 Lightweight easy to use generic ECS object management system.
 
-IMPORTANT: This project is still under construction and does not give the expected results!
+IMPORTANT: This project is up and runnig but it still needs more tests.
 
 What is this tool used for?
 --
 As the description implies this tool is a Entity Component System. 
 The core of this ECS is event based, this means that the systems are only updated if the components values have changed.
-
 
 How to use this tool
 --
@@ -31,9 +30,12 @@ EXAMPLE CODE:
         // If you would need the component settings later in the game use it like this
         CustomComponent component = entity.GetComponent<CustomComponent>();
         
-        // change your component values
-        // TODO: still under construction
-        // for now use component.value = "World";
+        // Change values of the component on an entity
+        component.customValue = "My New Value";
+        
+        // Push the entities changes through its dependent systems
+        entity.Update();
+       
     }
 
     /*
@@ -41,7 +43,7 @@ EXAMPLE CODE:
     */
     public class CustomComponent
     {
-        public string value = "Hello";
+        public string customValue = "Hello";
     }
 
     /*
@@ -105,13 +107,4 @@ Interfaces:
    - void RemoveComponent<T> ();
    - void Destroy();
    - void Update();
-
-Completed:
-- Custom systems can be added to the TinyECS.manager
-- Entities are created by the TinyECS.manager this to protect system code from users.
-- Components of any type can be added to enities.
-
-Failed tests:
-- Components do not trigger dependent systems on component update.
-- Components trigger all systems that depend on that component > currently by design
 
