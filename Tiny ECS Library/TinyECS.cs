@@ -12,10 +12,16 @@ namespace TinyECS
         void UpdateEntity(ITinyEntity entity);
     }
 
+    public interface ITinyComponent
+    {
+        void SetValue<T>(string property, T value);
+        T GetValue<T>(string property);
+    }
+
     public interface ITinyEntity
     {
-        T AddComponent<T>();
-        T GetComponent<T>();
+        ITinyComponent AddComponent<T>();
+        ITinyComponent GetComponent<T>();
         void Update();
         void RemoveComponent<T>();
         void Destroy();
@@ -35,6 +41,9 @@ namespace TinyECS
         // TODO: Implement a ForceUpdate() so that entities can itterate through
         // systems in the ored the where added. This if the user want to use the
         // ECS tool in an update game loop 
+        public void ForceUpdate()
+        {
+        }
 
         public ITinyEntity CreateEntity ()
         {
@@ -62,17 +71,44 @@ namespace TinyECS
 
         private class TinyEntity : ITinyEntity
         {
-            private class TinyComponent
+            private class TinyComponent : ITinyComponent
             {
-                public Type componentType;       
-                // TODO: Try using a getter/setter to auto update when changed       
+                public Type componentType;
                 public object componentValueObject;
                 public List<ITinySystem> dependentSystems = new List<ITinySystem>();
+
+                public void SetValue<T>(string property, T value)
+                {
+                    componentValueObject.GetType().GetProperty(property).SetValue(property, value);
+                    Console.WriteLine("component '"+ componentType.ToString()+ "' set property '"+property+"' value set to: " + value.ToString());
+                }
+                public T GetValue<T>(string property)
+                {
+                    Console.WriteLine("component '" + componentType.ToString() + "' get property '" + property + "'");
+
+                    if (componentValueObject == null) Console.WriteLine("ERROR: component '" + componentType.ToString() + "' = NULL");
+                    if (componentValueObject.GetType().GetProperty(property) == null)
+                    {
+                        Console.WriteLine("ERROR: component '" + componentType.ToString() + "' does not contain property: " + property);
+                        Console.WriteLine("  Options are:");
+                        foreach (System.Reflection.PropertyInfo info in componentValueObject.GetType().GetProperties())
+                        {
+                            Console.WriteLine("  - " + info.Name);
+                        }
+                    }
+
+                    return (T) componentValueObject.GetType().GetProperty(property).GetValue(componentValueObject, null);
+                }
             }
   
-            private List<TinyComponent> components = new List<TinyComponent>();
+            private List<TinyComponent> components { get; set; }
             public event Action<TinyEntity> stageForApplication;
             public event Action<TinyEntity> stageForDestruction;
+
+            public TinyEntity ()
+            {
+                components = new List<TinyComponent>();
+            }
 
             // TODO: Move Update() to ECSManager
             public void Update()
@@ -88,21 +124,21 @@ namespace TinyECS
                     system.UpdateEntity(this);
             }
 
-            public T AddComponent<T>()
+            public ITinyComponent AddComponent<T>()
             {
                 TinyComponent new_component = new TinyComponent();
                 new_component.componentType = typeof(T);
                 new_component.componentValueObject = Activator.CreateInstance<T>();
                 components.Add(new_component);
                 stageForApplication(this);
-                return (T) new_component.componentValueObject;
+                return (ITinyComponent) new_component;
             }
 
-            public T GetComponent<T>()
+            public ITinyComponent GetComponent<T>()
             {
                 TinyComponent component = GetTinyComponentByType<T>();
-                if (component != null) return (T) component.componentValueObject;
-                else return default(T); // return null depending on the type -> int returns 0
+                if (component != null) return (ITinyComponent) component;
+                else return (ITinyComponent) default(T); // return null depending on the type -> int returns 0
             }
 
             private TinyComponent GetTinyComponentByType<T>()
@@ -121,7 +157,6 @@ namespace TinyECS
                 foreach (TinyComponent component in components)
                 {
                     componentTypes.Add(component.componentType);
-
                     if (system.ComponentDependencies().Contains(component.componentType))
                     {
                         component.dependentSystems.Add(system);

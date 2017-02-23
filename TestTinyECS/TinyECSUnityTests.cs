@@ -68,12 +68,12 @@ namespace TestTinyECS
 
             ITinyEntity entity_01 = manager.CreateEntity();
 
-            CustomComponent_A component_A = entity_01.AddComponent<CustomComponent_A>();
-            CustomComponent_B component_B = entity_01.AddComponent<CustomComponent_B>();
+            ITinyComponent component_A = entity_01.AddComponent<CustomComponent_A>();
+            ITinyComponent component_B = entity_01.AddComponent<CustomComponent_B>();
 
             // assert
-            Assert.AreEqual(25, component_A.value_A);
-            Assert.AreEqual("hello world", component_B.value_B);
+            Assert.AreEqual(25, component_A.GetValue<int>("value_A"));
+            Assert.AreEqual("hello world", component_B.GetValue<string>("value_B"));
         }
 
         [TestMethod]
@@ -88,15 +88,24 @@ namespace TestTinyECS
 
             ITinyEntity entity_01 = manager.CreateEntity();
 
+            Console.WriteLine("# Add Component A");
             entity_01.AddComponent<CustomComponent_A>();
+
+            Console.WriteLine("# Add Component B");
             entity_01.AddComponent<CustomComponent_B>();
 
-            CustomComponent_A component_A = entity_01.GetComponent<CustomComponent_A>();
-            component_A.value_A = 12;
+            Console.WriteLine("# Get Component");
+            ITinyComponent component_A = entity_01.GetComponent<CustomComponent_A>();
+
+            Console.WriteLine("# Set Component");
+            component_A.SetValue("value_A", 12);
+
+            Console.WriteLine("# Update Entity");
             entity_01.Update();
 
             // assert
-            Assert.AreEqual(system_01.entityStagedForSystemUpdate.GetComponent<CustomComponent_A>().value_A, 12);
+            Console.WriteLine("# Assert");
+            Assert.AreEqual(system_01.entityStagedForSystemUpdate.GetComponent<CustomComponent_A>().GetValue<int>("value_A"), 12);
             Assert.AreEqual(12, system_01.lastValueA);
             Assert.AreEqual("hello world", system_01.lastValueB);
         }
@@ -127,8 +136,8 @@ namespace TestTinyECS
         public void UpdateEntity(ITinyEntity entity)
         {
             entityStagedForSystemUpdate = entity;
-            lastValueA = entity.GetComponent<CustomComponent_A>().value_A;
-            lastValueB = entity.GetComponent<CustomComponent_B>().value_B;
+            lastValueA = entity.GetComponent<CustomComponent_A>().GetValue<int>("value_A");
+            lastValueB = entity.GetComponent<CustomComponent_B>().GetValue<string>("value_B");
         }
 
         public ITinyEntity entityStagedForSystemUpdate;
