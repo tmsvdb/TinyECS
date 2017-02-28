@@ -1,8 +1,0 @@
-C:\Users\Thomas\Documents\Visual Studio 2015\Projects\Tiny ECS Library\TestTinyECS\bin\Debug\TestTinyECS.dll
-C:\Users\Thomas\Documents\Visual Studio 2015\Projects\Tiny ECS Library\TestTinyECS\bin\Debug\TestTinyECS.pdb
-C:\Users\Thomas\Documents\Visual Studio 2015\Projects\Tiny ECS Library\TestTinyECS\bin\Debug\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll
-C:\Users\Thomas\Documents\Visual Studio 2015\Projects\Tiny ECS Library\TestTinyECS\bin\Debug\Tiny ECS Library.dll
-C:\Users\Thomas\Documents\Visual Studio 2015\Projects\Tiny ECS Library\TestTinyECS\bin\Debug\Tiny ECS Library.pdb
-C:\Users\Thomas\Documents\Visual Studio 2015\Projects\Tiny ECS Library\TestTinyECS\obj\Debug\TestTinyECS.csprojResolveAssemblyReference.cache
-C:\Users\Thomas\Documents\Visual Studio 2015\Projects\Tiny ECS Library\TestTinyECS\obj\Debug\TestTinyECS.dll
-C:\Users\Thomas\Documents\Visual Studio 2015\Projects\Tiny ECS Library\TestTinyECS\obj\Debug\TestTinyECS.pdb
