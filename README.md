@@ -2,6 +2,7 @@
 Lightweight easy to use generic ECS object management system.
 
 IMPORTANT: This project is up and runnig but it still needs more tests.
+I want to take a look at other ways of event subscription such as Action method subscriptions => systems that want to update their entities and entities that have been changed and need their system to update. 
 
 What is this tool used for?
 --
